@@ -1,32 +1,37 @@
 # Report Name
 
-**Status:** Active / Retired
+**Status:** Active
 
-**Latest Version:** v0.0.0
+**Latest Version:** v0.0.1
 
-**Transitioned to UDAL:** Y/N
+**Transitioned to UDAL:** Y
 
-**Mini team:** Which mini team produces the report
+**Mini team:** Ops, Flow, Health Inequalities and Planning
 
-**Subject area:** Specific subject area
+**Subject area:** Elective, UEC
 
-**Contact:** Who to contact with questions
+**Contact:** england.datasouth@nhs.net
 
-**QA Level:** What level QA was conducted
+**QA Level:** Not QA'd yet
 
 ## Overview
 
-**Purpose:** Describe what this report does
+**Purpose:** Single (separate) overview table output for elective and UEC 
+headline metrics, showing most recent actuals, plan, month to date and flags 
+for where performance is off plan ('mustard' colour).
 
-**Audience:** Describe who the report is for
+**Audience:** Elective and UEC performance leads.
 
-**Frequency:** How often is it refreshed
+**Frequency:** Weekly
 
-**Output type:** Slides, excel, markdown, dashboard, etc.
+**Output type:** html, excel
 
 ## Data Sources
 
-Detail data sources included in this report.
+- 2025-26 planning data
+- 2025-26 planning actuals
+- WLDMS
+- A&E sitrep
 
 ## SOP
 
