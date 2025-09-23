@@ -1,12 +1,36 @@
 # Import packages
 import pandas as pd
 import numpy as np
+import datetime as dt
 
 # Bring in data
 data = pd.read_csv("data/mustard_tables.csv")
 
-# # Replace any string values with NaN -- this can be renmoved when put into prod
-# data['value'] = data['value'].apply(lambda x: np.nan if isinstance(x, str) and not x.replace('.', '', 1).isdigit() else x)
+# Bring in cat2 data
+cat2_data = pd.read_csv("data/em23c_output.csv")
+
+# Rename monthdate as date and orgcode as org_name
+cat2_data = cat2_data.rename(columns={'monthformatted': 'date',
+                                      'orgcode': 'org_name'})
+# Rename org_name values
+cat2_data['org_name'] = cat2_data['org_name'].replace({'RYD': ' SECAM',
+                                                       'RYE': ' SCAS',
+                                                       'Y59': 'SE Region'
+                                                         })
+# Filter for latest monthstart
+latest_monthstart = cat2_data['monthstart'].max()
+cat2_data = cat2_data[cat2_data['monthstart'] == latest_monthstart]
+# Drop monthstart column
+cat2_data = cat2_data.drop(columns=['monthstart'])
+# Create metric_name, variable and metric_type columns, to match mustard data
+cat2_data['metric_name'] = 'Cat2 (MTD)'
+cat2_data['variable'] = 'value'
+cat2_data['metric_type'] = 'actual'
+# Amend value column to be numeric minutes
+cat2_data['value'] = pd.to_numeric(cat2_data['value'], errors='coerce') / 60
+
+# Union the two dataframes together
+data = pd.concat([data, cat2_data], ignore_index=True)
 
 # Set custom order for org_name
 custom_order = [
@@ -15,6 +39,7 @@ custom_order = [
     "BHT",
     "OUH",
     "RBH",
+    "SCAS",
     "Frimley ICS",
     "Frimley",
     "HIOW ICS",
@@ -34,7 +59,8 @@ custom_order = [
     "Sussex ICS",
     "ESH",
     "QVH",
-    "UHSx"
+    "UHSx",
+    "SECAM"
     ]
 
 # Set dictionary to group metric_names
@@ -42,6 +68,7 @@ metric_groups = {
     '12hrs': 'UEC',
     '4hrs': 'UEC',
     '4hrs (MTD)': 'UEC',
+    'Cat2 (MTD)': 'UEC',
     '52ww performance': 'Elective',
     '52ww performance (MTD)': 'Elective',
     'Cancer 62d': 'Elective',
@@ -68,7 +95,7 @@ elective_data = data[data['metric_group'] == 'Elective'].copy()
 
 # Set up list for metrics where higher is worse
 higher_is_worse_metrics = ['12hrs',
-                           '4hrs',
+                           'Cat2 (MTD)',
                            '52ww performance',
                            '52ww performance (MTD)',
                            'DM01'
@@ -77,6 +104,7 @@ higher_is_worse_metrics = ['12hrs',
 # Set up list for metrics where higher is better
 higher_is_better_metrics = ['Cancer 62d',
                             'Cancer FDS',
+                            '4hrs',
                             '4hrs (MTD)',
                             'RTT performance',
                             'RTT performance (MTD)',
@@ -93,7 +121,7 @@ ignore_metrics += ['4hrs (MTD) - ' + date for date in data['date'].unique()]
 ignore_metrics += ['52ww performance (MTD) - ' + date for date in data['date'].unique()]
 
 # Loop through dataframes
-for df in [uec_data, elective_data]:
+for df in [elective_data, uec_data]:
 
     # Get first unique metric_group value for naming
     df_name = df['metric_group'].iloc[0].lower()
@@ -105,14 +133,31 @@ for df in [uec_data, elective_data]:
                                 columns=['metric_date', 'variable'],
                                 aggfunc='sum'
                                 )
-    
+            
     # Reindex the pivot table to the custom order
     pivot_table = pivot_table.reindex(custom_order)
 
     # Force all columns apart from 'org_name' and 'actual_gt_plan' to be float
     for col in pivot_table.columns:
-        if col != 'org_name' or col != 'actual_gt_plan':
+        if col != 'org_name' or col != 'actual_gt_plan' or col.startswith('Cat2 (MTD)'):
             pivot_table[col] = pd.to_numeric(pivot_table[col], errors='coerce')
+
+    
+    def minutes_to_mmss(x):
+        try:
+            if pd.isna(x):
+                return ""
+            minutes = int(x)
+            seconds = int(round((x - minutes) * 60))
+            return f"{minutes:02d}:{seconds:02d}"
+        except Exception:
+            return ""
+
+    # In your loop, after creating the pivot_table, format Cat2 (MTD) columns:
+    if 'Cat2 (MTD)' in df['metric_name'].values:
+        for col in pivot_table.columns:
+            if col[0].startswith('Cat2 (MTD)') and col[1] == 'actual':
+                pivot_table[col] = pivot_table[col].apply(minutes_to_mmss)
 
     # Create column for each metric_name to show where actual is worse than plan
     def actual_greater_than_plan(row, metric):
@@ -135,28 +180,34 @@ for df in [uec_data, elective_data]:
 
     # Function to apply mustard background and thicker left border to cells where actual is worse than plan
     def style_actual_vs_plan(row):
-        if metric in higher_is_better_metrics:
-            return [
-                'background-color: #FFC000' if (
-                    col[1] == 'actual' and
-                    pd.notna(row[col]) and
-                    (col[0], 'plan') in row.index and
-                    pd.notna(row[(col[0], 'plan')]) and
-                    row[col] < row[(col[0], 'plan')]
-                ) else ''
-                for col in row.index
-            ]
-        elif metric in higher_is_worse_metrics:
-            return [
-                'background-color: #FFC000' if (
-                    col[1] == 'actual' and
-                    pd.notna(row[col]) and
-                    (col[0], 'plan') in row.index and
-                    pd.notna(row[(col[0], 'plan')]) and
-                    row[col] > row[(col[0], 'plan')]
-                ) else ''
-                for col in row.index
-            ]
+        styles = []
+        for col in row.index:
+            metric = col[0]
+            if metric in higher_is_better_metrics:
+                if (
+                    col[1] == 'actual'
+                    and pd.notna(row[col])
+                    and (metric, 'plan') in row.index
+                    and pd.notna(row[(metric, 'plan')])
+                    and row[col] < row[(metric, 'plan')]
+                ):
+                    styles.append('background-color: #FFC000')
+                else:
+                    styles.append('')
+            elif metric in higher_is_worse_metrics:
+                if (
+                    col[1] == 'actual'
+                    and pd.notna(row[col])
+                    and (metric, 'plan') in row.index
+                    and pd.notna(row[(metric, 'plan')])
+                    and row[col] > row[(metric, 'plan')]
+                ):
+                    styles.append('background-color: #FFC000')
+                else:
+                    styles.append('')
+            else:
+                styles.append('')
+        return styles
     
     # Apply percentage for appropriate columns
     def percent_or_number(x):
