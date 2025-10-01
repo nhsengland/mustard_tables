@@ -309,11 +309,11 @@ for df in [elective_data, uec_data]:
                 # Thicker borders for all org_names with 'ICS' in the name
                 {'selector': '.row0', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
                 {'selector': '.row1', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row5', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row7', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row12', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row17', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row21', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row6', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row8', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row13', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row18', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row22', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
                 ], overwrite=False)
             .set_properties(**{
                 'text-align': 'center',
