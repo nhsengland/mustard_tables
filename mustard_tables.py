@@ -28,6 +28,8 @@ cat2_data['variable'] = 'value'
 cat2_data['metric_type'] = 'actual'
 # Amend value column to be numeric minutes
 cat2_data['value'] = pd.to_numeric(cat2_data['value'], errors='coerce') / 60
+# Remove white space from start of org_name values
+cat2_data['org_name'] = cat2_data['org_name'].str.strip()
 
 # Union the two dataframes together
 data = pd.concat([data, cat2_data], ignore_index=True)
@@ -39,7 +41,6 @@ custom_order = [
     "BHT",
     "OUH",
     "RBH",
-    "SCAS",
     "Frimley ICS",
     "Frimley",
     "HIOW ICS",
@@ -60,6 +61,7 @@ custom_order = [
     "ESH",
     "QVH",
     "UHSx",
+    "SCAS",
     "SECAM"
     ]
 
@@ -120,6 +122,52 @@ ignore_metrics = ['RTT performance (MTD) - ' + date for date in data['date'].uni
 ignore_metrics += ['4hrs (MTD) - ' + date for date in data['date'].unique()]
 ignore_metrics += ['52ww performance (MTD) - ' + date for date in data['date'].unique()]
 
+# Set order of columns for final output - note this works even when splitting by metric_group
+col_custom_order_uec = pd.MultiIndex.from_tuples([
+    # UEC metrics
+    ('12hrs - ' + data['date'].unique()[0], 'actual'),
+    ('12hrs - ' + data['date'].unique()[0], 'plan'),
+    ('4hrs - ' + data['date'].unique()[0], 'actual'),
+    ('4hrs - ' + data['date'].unique()[0], 'plan'),
+    ('4hrs (MTD) - ' + data['date'].unique()[0], 'actual'),
+    ('4hrs (MTD) - ' + data['date'].unique()[0], 'plan'),
+    ('Cat2 (MTD) - ' + data['date'].unique()[0], 'actual'),
+    ('Cat2 (MTD) - ' + data['date'].unique()[0], 'plan'),
+    ('12hrs - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('4hrs - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('4hrs (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('Cat2 (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ])
+col_custom_order_elective = pd.MultiIndex.from_tuples([
+    # Elective metrics
+    ('RTT performance - ' + data['date'].unique()[0], 'actual'),
+    ('RTT performance - ' + data['date'].unique()[0], 'plan'),
+    ('RTT performance - ' + data['date'].unique()[0], 'numerator_actual'),
+    ('RTT performance - ' + data['date'].unique()[0], 'numerator_plan'),
+    ('RTT performance (MTD) - ' + data['date'].unique()[0], 'actual'),
+    ('RTT performance (MTD) - ' + data['date'].unique()[0], 'plan'),
+    ('52ww performance - ' + data['date'].unique()[0], 'actual'),
+    ('52ww performance - ' + data['date'].unique()[0], 'plan'),
+    ('52ww performance (MTD) - ' + data['date'].unique()[0], 'actual'),
+    ('52ww performance (MTD) - ' + data['date'].unique()[0], 'plan'),
+    ('Time to first OPA - ' + data['date'].unique()[0], 'actual'),
+    ('Time to first OPA - ' + data['date'].unique()[0], 'plan'),
+    ('Cancer FDS - ' + data['date'].unique()[0], 'actual'),
+    ('Cancer FDS - ' + data['date'].unique()[0], 'plan'),
+    ('Cancer 62d - ' + data['date'].unique()[0], 'actual'),
+    ('Cancer 62d - ' + data['date'].unique()[0], 'plan'),
+    ('DM01 - ' + data['date'].unique()[0], 'actual'),
+    ('DM01 - ' + data['date'].unique()[0], 'plan'),
+    ('RTT performance - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('RTT performance (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('52ww performance - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('DM01 - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('52ww performance (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('Time to first OPA - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('Cancer FDS - ' + data['date'].unique()[0], 'actual_gt_plan'),
+    ('Cancer 62d - ' + data['date'].unique()[0], 'actual_gt_plan')
+    ])
+
 # Loop through dataframes
 for df in [elective_data, uec_data]:
 
@@ -136,6 +184,12 @@ for df in [elective_data, uec_data]:
             
     # Reindex the pivot table to the custom order
     pivot_table = pivot_table.reindex(custom_order)
+
+    # # Reindex columns to col_custom_order
+    # if df_name == "uec":
+    #     pivot_table = pivot_table.reindex(columns=col_custom_order_uec, fill_value=np.nan)
+    # else:
+    #     pivot_table = pivot_table.reindex(columns=col_custom_order_elective, fill_value=np.nan)
 
     # Force all columns apart from 'org_name' and 'actual_gt_plan' to be float
     for col in pivot_table.columns:
@@ -309,11 +363,12 @@ for df in [elective_data, uec_data]:
                 # Thicker borders for all org_names with 'ICS' in the name
                 {'selector': '.row0', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
                 {'selector': '.row1', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row6', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row8', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row13', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row18', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
-                {'selector': '.row22', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row5', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row7', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row12', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row17', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row21', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
+                {'selector': '.row25', 'props': [('border-top', '3px solid #666'), ('font-family', 'Arial'), ('font-size', '12px')]},
                 ], overwrite=False)
             .set_properties(**{
                 'text-align': 'center',
