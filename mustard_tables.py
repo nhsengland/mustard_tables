@@ -12,9 +12,6 @@ cat2_data = pd.read_csv("data/em23c_output.csv")
 # Bring in cat2 plans data
 cat2_plans = pd.read_csv("data/cat2_plans.csv")
 
-# # Get date into mmm-yy format
-# cat2_plans['date'] = pd.to_datetime(data['date'], format='%d/%m/%Y').dt.strftime('%b-%y')
-
 # Rename monthdate as date and orgcode as org_name
 cat2_data = cat2_data.rename(columns={'monthformatted': 'date',
                                       'orgcode': 'org_name',
@@ -146,11 +143,6 @@ higher_is_better_metrics = ['Cancer 62d',
 # Concatenate lists with date to match metric_date column
 higher_is_worse_metrics = [metric + ' - ' + date for metric in higher_is_worse_metrics for date in data['date'].unique()]
 higher_is_better_metrics = [metric + ' - ' + date for metric in higher_is_better_metrics for date in data['date'].unique()]
-
-# # Create list of metrics to ignore for actual vs plan comparison
-# ignore_metrics = ['RTT performance (MTD) - ' + date for date in data['date'].unique()]
-# ignore_metrics += ['4hrs (MTD) - ' + date for date in data['date'].unique()]
-# ignore_metrics += ['52ww performance (MTD) - ' + date for date in data['date'].unique()]
 
 first_dates = data.groupby('metric_name')['date'].min().to_dict()
 
@@ -324,66 +316,6 @@ for df in [elective_data, uec_data]:
             for col in row.index
         ]
     
-    # # Set table styles
-    # table_styles_extra = [
-    #     {'selector': 'table', 'props': [
-    #         ('margin', '40px auto'),
-    #         ('border-collapse', 'separate'),
-    #         ('border-spacing', '0'),
-    #         ('box-shadow', '0 4px 24px rgba(0,0,0,0.10)'),
-    #         ('border-radius', '12px'),
-    #         ('overflow', 'hidden'),
-    #         ('background-color', '#fff'),
-    #         ('font-family', 'Arial'),
-    #     ]},
-    #     {'selector': 'caption', 'props': [
-    #         ('caption-side', 'top'),
-    #         ('font-size', '1.3em'),
-    #         ('font-weight', 'bold'),
-    #         ('padding', '12px'),
-    #         ('color', '#333'),
-    #         ('letter-spacing', '1px'),
-    #         ('background', '#f9f9f9'),
-    #         ('border-radius', '12px 12px 0 0'),
-    #     ]},
-    #     {'selector': 'thead th', 'props': [
-    #         ('position', 'sticky'),
-    #         ('top', '0'),
-    #         ('z-index', '2'),
-    #         ('background-color', '#f2f2f2'),
-    #         ('color', '#333'),
-    #         ('font-weight', 'bold'),
-    #         ('font-family', 'Arial'),
-    #         ('font-size', '13px'),
-    #         ('border-bottom', '2px solid #FFC000'),
-    #         ('padding', '10px 8px'),
-    #     ]},
-    #     {'selector': 'tbody td', 'props': [
-    #         ('padding', '8px'),
-    #         ('border', '1px solid #ddd'),
-    #         ('color', 'black'),
-    #         ('font-family', 'Arial'),
-    #         ('font-size', '12px'),
-    #         ('background-color', '#fff'),
-    #         ('transition', 'background 0.2s'),
-    #     ]},
-    #     {'selector': 'tbody tr:nth-child(even)', 'props': [
-    #         ('background-color', '#f7fafc'),
-    #     ]},
-    #     {'selector': 'tbody tr:nth-child(odd)', 'props': [
-    #         ('background-color', '#fdf6e3'),
-    #     ]},
-    #     {'selector': 'tbody tr:hover', 'props': [
-    #         ('background-color', '#ffe9b3'),
-    #     ]},
-    #     {'selector': '.level0', 'props': [
-    #         ('border-left', '3px solid #666'),
-    #         ('border-right', '3px solid #666'),
-    #         ('font-family', 'Arial'),
-    #         ('font-size', '12px'),
-    #     ]},
-    # ]
-
     # Apply styling to the pivot table html output
     styled_pivot_table = (
         pivot_table.style
