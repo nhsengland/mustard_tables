@@ -152,51 +152,56 @@ higher_is_better_metrics = [metric + ' - ' + date for metric in higher_is_better
 # ignore_metrics += ['4hrs (MTD) - ' + date for date in data['date'].unique()]
 # ignore_metrics += ['52ww performance (MTD) - ' + date for date in data['date'].unique()]
 
-# # Set order of columns for final output - note this works even when splitting by metric_group
-# col_custom_order_uec = pd.MultiIndex.from_tuples([
-#     # UEC metrics
-#     ('12hrs - ' + data['date'].unique()[0], 'actual'),
-#     ('12hrs - ' + data['date'].unique()[0], 'plan'),
-#     ('4hrs - ' + data['date'].unique()[0], 'actual'),
-#     ('4hrs - ' + data['date'].unique()[0], 'plan'),
-#     ('4hrs (MTD) - ' + data['date'].unique()[0], 'actual'),
-#     ('4hrs (MTD) - ' + data['date'].unique()[0], 'plan'),
-#     ('Cat2 (MTD) - ' + data['date'].unique()[0], 'actual'),
-#     ('Cat2 (MTD) - ' + data['date'].unique()[0], 'plan'),
-#     ('12hrs - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('4hrs - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('4hrs (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('Cat2 (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ])
-# col_custom_order_elective = pd.MultiIndex.from_tuples([
-#     # Elective metrics
-#     ('RTT performance - ' + data['date'].unique()[0], 'actual'),
-#     ('RTT performance - ' + data['date'].unique()[0], 'plan'),
-#     ('RTT performance - ' + data['date'].unique()[0], 'numerator_actual'),
-#     ('RTT performance - ' + data['date'].unique()[0], 'numerator_plan'),
-#     ('RTT performance (MTD) - ' + data['date'].unique()[0], 'actual'),
-#     ('RTT performance (MTD) - ' + data['date'].unique()[0], 'plan'),
-#     ('52ww performance - ' + data['date'].unique()[0], 'actual'),
-#     ('52ww performance - ' + data['date'].unique()[0], 'plan'),
-#     ('52ww performance (MTD) - ' + data['date'].unique()[0], 'actual'),
-#     ('52ww performance (MTD) - ' + data['date'].unique()[0], 'plan'),
-#     ('Time to first OPA - ' + data['date'].unique()[0], 'actual'),
-#     ('Time to first OPA - ' + data['date'].unique()[0], 'plan'),
-#     ('Cancer FDS - ' + data['date'].unique()[0], 'actual'),
-#     ('Cancer FDS - ' + data['date'].unique()[0], 'plan'),
-#     ('Cancer 62d - ' + data['date'].unique()[0], 'actual'),
-#     ('Cancer 62d - ' + data['date'].unique()[0], 'plan'),
-#     ('DM01 - ' + data['date'].unique()[0], 'actual'),
-#     ('DM01 - ' + data['date'].unique()[0], 'plan'),
-#     ('RTT performance - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('RTT performance (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('52ww performance - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('DM01 - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('52ww performance (MTD) - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('Time to first OPA - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('Cancer FDS - ' + data['date'].unique()[0], 'actual_gt_plan'),
-#     ('Cancer 62d - ' + data['date'].unique()[0], 'actual_gt_plan')
-#     ])
+first_dates = data.groupby('metric_name')['date'].min().to_dict()
+
+# Set order of columns for final output - note this works even when splitting by metric_group
+col_custom_order_uec = pd.MultiIndex.from_tuples([
+    # UEC metrics
+    ('4hrs - ' + first_dates['4hrs'], 'actual'),
+    ('4hrs - ' + first_dates['4hrs'], 'plan'),
+    ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual'),
+    ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'plan'),
+    ('12hrs - ' + first_dates['12hrs'], 'actual'),
+    ('12hrs - ' + first_dates['12hrs'], 'plan'),
+    ('12hrs - ' + first_dates['12hrs'], 'actual_numerator'),
+    ('12hrs - ' + first_dates['12hrs'], 'plan_numerator'),
+    ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual'),
+    ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'plan'),
+    ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual'),
+    ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'plan'),
+    ('4hrs - ' + first_dates['4hrs'], 'actual_gt_plan'),
+    ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual_gt_plan'),
+    ('12hrs - ' + first_dates['12hrs'], 'actual_gt_plan'),
+    ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual_gt_plan'),
+    ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual_gt_plan'),
+    ])
+col_custom_order_elective = pd.MultiIndex.from_tuples([
+    # Elective metrics
+    ('RTT performance - ' + first_dates['RTT performance'], 'actual'),
+    ('RTT performance - ' + first_dates['RTT performance'], 'plan'),
+    ('RTT performance (MTD) - ' + first_dates['RTT performance (MTD)'], 'actual'),
+    ('RTT performance (MTD) - ' + first_dates['RTT performance (MTD)'], 'plan'),
+    ('52ww performance - ' + first_dates['52ww performance'], 'actual'),
+    ('52ww performance - ' + first_dates['52ww performance'], 'plan'),
+    ('52ww performance (MTD) - ' + first_dates['52ww performance (MTD)'], 'actual'),
+    ('52ww performance (MTD) - ' + first_dates['52ww performance (MTD)'], 'plan'),
+    ('Time to first OPA - ' + first_dates['Time to first OPA'], 'actual'),
+    ('Time to first OPA - ' + first_dates['Time to first OPA'], 'plan'),
+    ('Cancer FDS - ' + first_dates['Cancer FDS'], 'actual'),
+    ('Cancer FDS - ' + first_dates['Cancer FDS'], 'plan'),
+    ('Cancer 62d - ' + first_dates['Cancer 62d'], 'actual'),
+    ('Cancer 62d - ' + first_dates['Cancer 62d'], 'plan'),
+    ('DM01 - ' + first_dates['DM01'], 'actual'),
+    ('DM01 - ' + first_dates['DM01'], 'plan'),
+    ('RTT performance - ' + first_dates['RTT performance'], 'actual_gt_plan'),
+    ('RTT performance (MTD) - ' + first_dates['RTT performance (MTD)'], 'actual_gt_plan'),
+    ('52ww performance - ' + first_dates['52ww performance'], 'actual_gt_plan'),
+    ('DM01 - ' + first_dates['DM01'], 'actual_gt_plan'),
+    ('52ww performance (MTD) - ' + first_dates['52ww performance (MTD)'], 'actual_gt_plan'),
+    ('Time to first OPA - ' + first_dates['Time to first OPA'], 'actual_gt_plan'),
+    ('Cancer FDS - ' + first_dates['Cancer FDS'], 'actual_gt_plan'),
+    ('Cancer 62d - ' + first_dates['Cancer 62d'], 'actual_gt_plan')
+    ])
 
 # Loop through dataframes
 for df in [elective_data, uec_data]:
@@ -215,11 +220,14 @@ for df in [elective_data, uec_data]:
     # Reindex the pivot table to the custom order
     pivot_table = pivot_table.reindex(custom_order)
 
-    # # Reindex columns to col_custom_order
-    # if df_name == "uec":
-    #     pivot_table = pivot_table.reindex(columns=col_custom_order_uec, fill_value=np.nan)
-    # else:
-    #     pivot_table = pivot_table.reindex(columns=col_custom_order_elective, fill_value=np.nan)
+    # Remove rows where all values are NaN
+    pivot_table = pivot_table.dropna(how='all')
+
+    # Reindex columns to col_custom_order
+    if df_name == "uec":
+        pivot_table = pivot_table.reindex(columns=col_custom_order_uec, fill_value=np.nan)
+    else:
+        pivot_table = pivot_table.reindex(columns=col_custom_order_elective, fill_value=np.nan)
 
     # Force all columns apart from 'org_name' and 'actual_gt_plan' to be float
     for col in pivot_table.columns:
