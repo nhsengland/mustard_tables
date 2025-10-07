@@ -110,6 +110,7 @@ custom_order = [
 # Set dictionary to group metric_names
 metric_groups = {
     '12hrs': 'UEC',
+    '12hrs performance (MTD)': 'UEC',
     '4hrs': 'UEC',
     '4hrs (MTD)': 'UEC',
     'Cat2 (MTD)': 'UEC',
@@ -140,6 +141,7 @@ elective_data = data[data['metric_group'] == 'Elective'].copy()
 
 # Set up list for metrics where higher is worse
 higher_is_worse_metrics = ['12hrs',
+                           '12hrs performance (MTD)',
                            'Cat2 (MTD)',
                            'Cat2 (YTD)',
                            '52ww performance',
@@ -174,6 +176,8 @@ col_custom_order_uec = pd.MultiIndex.from_tuples([
     ('12hrs - ' + first_dates['12hrs'], 'plan'),
     ('12hrs - ' + first_dates['12hrs'], 'actual_numerator'),
     ('12hrs - ' + first_dates['12hrs'], 'plan_numerator'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'plan'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'plan'),
     ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual'),
