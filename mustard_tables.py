@@ -61,31 +61,48 @@ data = pd.concat([data, cat2_data], ignore_index=True)
 
 # Set custom order for org_name
 custom_order = [
-    "SE Region",
-    "BOB ICS",
-    "BHT",
-    "OUH",
-    "RBH",
-    "Frimley ICS",
-    "Frimley",
-    "HIOW ICS",
-    "HHFT",
-    "IOW",
-    "PHU",
-    "UHSotn",
-    "KM ICS",
-    "DGT",
-    "EKH",
-    "MTW",
-    "MedwayFT",
-    "Surrey ICS",
-    "ASP",
-    "RSCH",
-    "SASH",
-    "Sussex ICS",
-    "ESH",
-    "QVH",
-    "UHSx",
+    # SE Region
+    'SE Region',
+    #BOB
+    'Buckinghamshire, Oxfordshire And Berkshire West ICS',
+    'Buckinghamshire Healthcare NHS Trust',
+    'Oxford University Hospitals NHS Foundation Trust',
+    'Royal Berkshire NHS Foundation Trust',
+    'Berks Health',
+    'BHT',
+    'OHealth',
+    #Frimley
+    'Frimley Health & Care ICS',
+    'Frimley Health NHS Foundation Trust',
+    #HIOW
+    'Hampshire And The Isle Of Wight ICS',
+    'Hampshire Hospitals NHS Foundation Trust',
+    'Isle of Wight NHS Trust',
+    'Portsmouth Hospitals University National Health Service Trust',
+    'University Hospital Southampton NHS Foundation Trust',
+    'HIOW FT',#this was Southern Health and is now HIOW trust
+    #KM
+    'Kent And Medway ICS', 
+    'Dartford And Gravesham NHS Trust',
+    'East Kent Hospitals University NHS Foundation Trust',
+    'Maidstone And Tunbridge Wells NHS Trust',
+    'Medway NHS Foundation Trust',
+    'KM SCP',
+    'KCH',
+    #Surrey
+    'Surrey Heartlands Health & Care Partnership ICS',
+    'Ashford And St Peters Hospitals NHS Foundation Trust',
+    'Royal Surrey County Hospital NHS Foundation Trust',
+    'Surrey And Sussex Healthcare NHS Trust',
+    'SBorders',
+    'SECAMB',
+    #Sussex
+    'Sussex Health And Care Partnership ICS',
+    'East Sussex Healthcare NHS Trust',
+    'Queen Victoria Hospital NHS Foundation Trust',
+    'University Hospitals Sussex NHS Foundation Trust',
+    'SxPartnership',
+    # Amb trusts
     "SCAS",
     "SECAM"
     ]
@@ -217,9 +234,9 @@ for df in [elective_data, uec_data]:
 
     # Reindex columns to col_custom_order
     if df_name == "uec":
-        pivot_table = pivot_table.reindex(columns=col_custom_order_uec, fill_value=np.nan)
+        pivot_table = pivot_table.reindex(columns=col_custom_order_uec)
     else:
-        pivot_table = pivot_table.reindex(columns=col_custom_order_elective, fill_value=np.nan)
+        pivot_table = pivot_table.reindex(columns=col_custom_order_elective)
 
     # Force all columns apart from 'org_name' and 'actual_gt_plan' to be float
     for col in pivot_table.columns:
