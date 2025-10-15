@@ -69,7 +69,7 @@ custom_order = [
     'Oxford University Hospitals NHS Foundation Trust',
     'Royal Berkshire NHS Foundation Trust',
     'Berks Health',
-    'BHT',
+    'Buckinghamshire Healthcare NHS Trust',
     'OHealth',
     #Frimley
     'Frimley Health & Care ICS',
