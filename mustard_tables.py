@@ -69,7 +69,6 @@ custom_order = [
     'Oxford University Hospitals NHS Foundation Trust',
     'Royal Berkshire NHS Foundation Trust',
     'Berks Health',
-    'Buckinghamshire Healthcare NHS Trust',
     'OHealth',
     #Frimley
     'Frimley Health & Care ICS',
@@ -125,6 +124,15 @@ metric_groups = {
     'Time to first OPA': 'Elective'
     }
 
+# Set today's date, to calculate 12hr numerator plan MTD
+today = dt.date.today()
+# Calculate days in month and take away days passed if month is current month
+days_in_month = (dt.date(today.year + int(today.month / 12), ((today.month % 12) + 1), 1) - dt.timedelta(days=1)).day
+# Set how many days have passed in the month to today
+days_passed = today.day
+# Calculate % through month
+percent_through_month = days_passed / days_in_month
+
 # Map metric_names to their groups
 data['metric_group'] = data['metric_name'].map(metric_groups)
 # .fillna(data['metric_name'])
@@ -134,6 +142,13 @@ data['metric_date'] = data['metric_name'] + ' - ' + data['date']
 
 # Amend 'value' to 'actual' in 'variable' column
 data['variable'] = data['variable'].replace({'value': 'actual'})
+
+# Amend value column if varaible is 'actual_numerator' for 12hrs performance (MTD)
+def amend_12hrs_numerator(row):
+    if row['metric_name'] == '12hrs performance (MTD)' and row['variable'] == 'plan_numerator':
+        row['value'] = row['value'] * percent_through_month
+    else:
+        return row['value']
 
 # Split UEC and elective up to separate dataframes
 uec_data = data[data['metric_group'] == 'UEC'].copy()
@@ -168,23 +183,26 @@ first_dates = data.groupby('metric_name')['date'].min().to_dict()
 # Set order of columns for final output - note this works even when splitting by metric_group
 col_custom_order_uec = pd.MultiIndex.from_tuples([
     # UEC metrics
-    ('4hrs - ' + first_dates['4hrs'], 'actual'),
-    ('4hrs - ' + first_dates['4hrs'], 'plan'),
-    ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual'),
+    # ('4hrs - ' + first_dates['4hrs'], 'actual'),
+    # ('4hrs - ' + first_dates['4hrs'], 'plan'),
     ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'plan'),
-    ('12hrs - ' + first_dates['12hrs'], 'actual'),
-    ('12hrs - ' + first_dates['12hrs'], 'plan'),
-    ('12hrs - ' + first_dates['12hrs'], 'actual_numerator'),
-    ('12hrs - ' + first_dates['12hrs'], 'plan_numerator'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual'),
+    ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual'),
+    # ('12hrs - ' + first_dates['12hrs'], 'actual'),
+    # ('12hrs - ' + first_dates['12hrs'], 'plan'),
+    # ('12hrs - ' + first_dates['12hrs'], 'actual_numerator'),
+    # ('12hrs - ' + first_dates['12hrs'], 'plan_numerator'),
     ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'plan'),
-    ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'plan_numerator'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual_numerator'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'plan'),
-    ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual'),
+    ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual'),
     ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'plan'),
-    ('4hrs - ' + first_dates['4hrs'], 'actual_gt_plan'),
+    ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual'),
+    # ('4hrs - ' + first_dates['4hrs'], 'actual_gt_plan'),
     ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual_gt_plan'),
-    ('12hrs - ' + first_dates['12hrs'], 'actual_gt_plan'),
+    # ('12hrs - ' + first_dates['12hrs'], 'actual_gt_plan'),
+    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual_gt_plan'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual_gt_plan'),
     ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual_gt_plan'),
     ])
