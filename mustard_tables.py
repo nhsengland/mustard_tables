@@ -18,7 +18,7 @@ cat2_data = cat2_data.rename(columns={'monthformatted': 'date',
                                       'value': 'actual'
                                       })
 # Rename org_name values
-cat2_data['org_name'] = cat2_data['org_name'].replace({'RYD': ' SECAM',
+cat2_data['org_name'] = cat2_data['org_name'].replace({'RYD': ' SECAMB',
                                                        'RYE': ' SCAS',
                                                        'Y59': 'SE Region'
                                                          })
@@ -59,6 +59,9 @@ cat2_data['variable'] = cat2_data['metric_type']
 # Union the two dataframes together
 data = pd.concat([data, cat2_data], ignore_index=True)
 
+# Bring in UEC 4hr uplift data
+uec_4hrs_uplift = pd.read_csv("data/uec_4hr_uplift.csv")
+
 # Set custom order for org_name
 custom_order = [
     # SE Region
@@ -94,7 +97,6 @@ custom_order = [
     'Royal Surrey County Hospital NHS Foundation Trust',
     'Surrey And Sussex Healthcare NHS Trust',
     'SBorders',
-    'SECAMB',
     #Sussex
     'Sussex Health And Care Partnership ICS',
     'East Sussex Healthcare NHS Trust',
@@ -103,13 +105,13 @@ custom_order = [
     'SxPartnership',
     # Amb trusts
     "SCAS",
-    "SECAM"
+    "SECAMB"
     ]
 
 # Set dictionary to group metric_names
 metric_groups = {
     '12hrs': 'UEC',
-    '12hrs performance (MTD)': 'UEC',
+    '12hrs (MTD)': 'UEC',
     '4hrs': 'UEC',
     '4hrs (MTD)': 'UEC',
     'Cat2 (MTD)': 'UEC',
@@ -156,7 +158,7 @@ elective_data = data[data['metric_group'] == 'Elective'].copy()
 
 # Set up list for metrics where higher is worse
 higher_is_worse_metrics = ['12hrs',
-                           '12hrs performance (MTD)',
+                           '12hrs (MTD)',
                            'Cat2 (MTD)',
                            'Cat2 (YTD)',
                            '52ww performance',
@@ -191,10 +193,10 @@ col_custom_order_uec = pd.MultiIndex.from_tuples([
     # ('12hrs - ' + first_dates['12hrs'], 'plan'),
     # ('12hrs - ' + first_dates['12hrs'], 'actual_numerator'),
     # ('12hrs - ' + first_dates['12hrs'], 'plan_numerator'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'plan'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'plan_numerator'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual_numerator'),
+    ('12hrs (MTD) - ' + first_dates['12hrs (MTD)'], 'plan'),
+    ('12hrs (MTD) - ' + first_dates['12hrs (MTD)'], 'actual'),
+    ('12hrs (MTD) - ' + first_dates['12hrs (MTD)'], 'plan_numerator'),
+    ('12hrs (MTD) - ' + first_dates['12hrs (MTD)'], 'actual_numerator'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'plan'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual'),
     ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'plan'),
@@ -202,7 +204,7 @@ col_custom_order_uec = pd.MultiIndex.from_tuples([
     # ('4hrs - ' + first_dates['4hrs'], 'actual_gt_plan'),
     ('4hrs (MTD) - ' + first_dates['4hrs (MTD)'], 'actual_gt_plan'),
     # ('12hrs - ' + first_dates['12hrs'], 'actual_gt_plan'),
-    ('12hrs performance (MTD) - ' + first_dates['12hrs performance (MTD)'], 'actual_gt_plan'),
+    ('12hrs (MTD) - ' + first_dates['12hrs (MTD)'], 'actual_gt_plan'),
     ('Cat2 (MTD) - ' + first_dates['Cat2 (MTD)'], 'actual_gt_plan'),
     ('Cat2 (YTD) - ' + first_dates['Cat2 (YTD)'], 'actual_gt_plan'),
     ])
@@ -227,11 +229,11 @@ col_custom_order_elective = pd.MultiIndex.from_tuples([
     ('RTT performance - ' + first_dates['RTT performance'], 'actual_gt_plan'),
     ('RTT performance (MTD) - ' + first_dates['RTT performance (MTD)'], 'actual_gt_plan'),
     ('52ww performance - ' + first_dates['52ww performance'], 'actual_gt_plan'),
-    ('DM01 - ' + first_dates['DM01'], 'actual_gt_plan'),
     ('52ww performance (MTD) - ' + first_dates['52ww performance (MTD)'], 'actual_gt_plan'),
     ('Time to first OPA - ' + first_dates['Time to first OPA'], 'actual_gt_plan'),
     ('Cancer FDS - ' + first_dates['Cancer FDS'], 'actual_gt_plan'),
-    ('Cancer 62d - ' + first_dates['Cancer 62d'], 'actual_gt_plan')
+    ('Cancer 62d - ' + first_dates['Cancer 62d'], 'actual_gt_plan'),
+    ('DM01 - ' + first_dates['DM01'], 'actual_gt_plan')
     ])
 
 # Loop through dataframes
@@ -247,6 +249,18 @@ for df in [elective_data, uec_data]:
                                 columns=['metric_date', 'variable'],
                                 aggfunc='sum'
                                 )
+    
+    # If df is uec_data, amend 4hrs (MTD) actual to include uplift
+    if df_name == "uec":
+        for col in pivot_table.columns:
+            if col[0].startswith('4hrs (MTD)') and col[1] == 'actual':
+                # Map uplift values to org_name
+                uplift_map = uec_4hrs_uplift.set_index('org_name')['uplift'].to_dict()
+                # Add uplift to actual values
+                pivot_table[col] = pivot_table.apply(
+                    lambda row: row[col] + uplift_map.get(row.name, 0),
+                    axis=1
+                )
             
     # Reindex the pivot table to the custom order
     pivot_table = pivot_table.reindex(custom_order)
